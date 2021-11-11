@@ -10,7 +10,7 @@ const MainScreen = () => {
         <>
             {
                 activeScreen == "Home" ? <HomeScreen /> :
-                    activeScreen == "Account" ? <AccountScreen /> :
+                    activeScreen == "Account" ? <AccountScreen setActiveScreen={setActiveScreen} /> :
                         activeScreen == "Cart" ? <HomeScreen /> :
                             activeScreen == "Menu" && <HomeScreen />
             }

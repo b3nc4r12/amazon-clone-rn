@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }) => {
                 email: authUser.user.email,
                 name: name,
                 profilePicture: "https://i.ibb.co/nPbJWTD/default-profile-pic-e1513291410505.jpg",
+                location: "",
                 timestamp: serverTimestamp()
             })
 
@@ -88,6 +89,7 @@ export const AuthProvider = ({ children }) => {
         error,
         loadingInitial,
         loading,
+        setUser,
         signIn,
         signUp,
         signOut: logout
