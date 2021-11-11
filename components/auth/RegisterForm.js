@@ -6,6 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import tw from "tailwind-react-native-classnames"
 import useAuth from "../../hooks/useAuth"
 import { LinearGradient } from "expo-linear-gradient"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const RegisterForm = () => {
     const registerSchema = Yup.object().shape({
@@ -26,6 +27,14 @@ const RegisterForm = () => {
 
     return (
         <View style={tw`px-4 border border-gray-300 border-t-0 border-b-0`}>
+            <Spinner
+                visible={loading}
+                cancelable={false}
+                overlayColor="rgba(0, 0, 0, 0.5)"
+                textContent={"Loading..."}
+                textStyle={tw`text-white`}
+            />
+
             <View style={tw`pb-3`}>
                 <Controller
                     control={control}
