@@ -13,6 +13,7 @@
     "@react-navigation/native-stack": "^6.2.5",
     "axios": "^0.24.0",
     "expo": "~43.0.2",
+    "expo-image-picker": "~11.0.3",
     "expo-linear-gradient": "~10.0.3",
     "expo-status-bar": "~1.1.0",
     "firebase": "^9.4.0",
@@ -25,6 +26,8 @@
     "react-native-screens": "~3.8.0",
     "react-native-web": "0.17.1",
     "tailwind-react-native-classnames": "^1.5.1",
+    "uuid": "^8.3.2",
+    "valid-url": "^1.0.9",
     "yup": "^0.32.11"
   },
   "devDependencies": {
