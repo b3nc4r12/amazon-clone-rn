@@ -4,7 +4,9 @@ import { SafeAreaProvider } from "react-native-safe-area-context"
 import { NavigationContainer } from "@react-navigation/native"
 import { AuthProvider } from "./hooks/useAuth"
 import StackNavigator from "./StackNavigator"
-import { KeyboardAvoidingView, Platform } from "react-native"
+import { KeyboardAvoidingView, Platform, LogBox } from "react-native"
+
+LogBox.ignoreLogs(["AsyncStorage has been extracted from react-native core"])
 
 const App = () => {
   return (

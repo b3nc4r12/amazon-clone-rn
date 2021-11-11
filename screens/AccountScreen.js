@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient"
 import FeaturesList from "../components/account/FeaturesList"
 import { useNavigation } from "@react-navigation/core"
 import useAuth from "../hooks/useAuth"
+import validUrl from "valid-url"
 
 const data = [
     "Your Orders",
@@ -33,7 +34,7 @@ const AccountScreen = ({ setActiveScreen }) => {
 
                             <TouchableOpacity onPress={() => navigation.navigate("EditProfileScreen")}>
                                 <Image
-                                    source={{ uri: user.profilePicture }}
+                                    source={{ uri: validUrl.isUri(user.profilePicture) }}
                                     style={[tw`h-12 w-12 border-2 rounded-full`, { borderColor: "white" }]}
                                 />
                             </TouchableOpacity>
@@ -66,6 +67,7 @@ const AccountScreen = ({ setActiveScreen }) => {
                     <View style={tw`flex-row justify-around flex-wrap px-2 -mt-8`}>
                         {data.map((text, index) => (
                             <TouchableOpacity
+                                onPress={() => index === 2 ? navigation.navigate("AccountMenuScreen") : navigation.navigate("MainScreen")}
                                 key={index}
                                 style={[tw`items-center bg-gray-50 py-4 shadow-sm rounded-full border border-gray-300 mb-2.5`, { width: "45%" }]}
                             >

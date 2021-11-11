@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             await signOut(auth);
+            navigation.navigate("MainScreen")
         } catch (error) {
             setError(error);
         } finally {

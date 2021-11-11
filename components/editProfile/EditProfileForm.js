@@ -11,6 +11,7 @@ import { useNavigation } from "@react-navigation/core"
 import { ref, getDownloadURL, uploadBytes } from "@firebase/storage"
 import { storage, db } from "../../firebase"
 import { updateDoc, doc } from "@firebase/firestore"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const EditProfileForm = () => {
     const editProfileSchema = Yup.object().shape({
@@ -27,8 +28,6 @@ const EditProfileForm = () => {
 
     const [image, setImage] = useState(user.profilePicture);
     const [isLoading, toggleLoading] = useState(false);
-    const [uploading, setUploading] = useState(false);
-    const [downloadUrl, setDownloadUrl] = useState("");
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -51,50 +50,6 @@ const EditProfileForm = () => {
             })(),
         []
     )
-
-    // const handleImagePicked = async (pickerResult) => {
-    //     try {
-    //         setUploading(true);
-
-    //         if (!pickerResult.cancelled) {
-    //             const uploadUrl = await uploadImage(pickerResult.uri);
-    //             setImage(uploadUrl);
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //         alert("Upload failed.")
-    //     } finally {
-    //         setUploading(false);
-    //     }
-    // }
-
-    // const uploadImage = async (image) => {
-    //     const blob = await new Promise((resolve, reject) => {
-    //         const xhr = new XMLHttpRequest();
-
-    //         xhr.onload = () => {
-    //             resolve(xhr.response);
-    //         }
-
-    //         xhr.onerror = (e) => {
-    //             console.log(e)
-    //             reject(new TypeError("Network request failed"));
-    //         }
-
-    //         xhr.responseType = "blob"
-    //         xhr.open("GET", image, true);
-    //         xhr.send(null);
-    //     })
-
-    //     const imageRef = ref(storage, `${user.name} Profile Picture - Date: ${new Date().toISOString()}`);
-    //     const result = await uploadBytes(imageRef, blob);
-
-    //     blob.close();
-
-    //     const downloadUrl = await getDownloadURL(imageRef);
-
-    //     return downloadUrl
-    // }
 
     const updateProfileData = async (data) => {
         toggleLoading(true);
@@ -138,11 +93,22 @@ const EditProfileForm = () => {
             })
         }
 
-        return updateData(data).then(() => toggleLoading(false))
+        return updateData(data)
+            .then(() => navigation.goBack())
+            .catch((error) => alert(error.message))
+            .finally(() => toggleLoading(false))
     }
 
     return (
         <View style={tw`mt-8`}>
+            <Spinner
+                visible={isLoading}
+                cancelable={false}
+                overlayColor="rgba(0, 0, 0, 0.5)"
+                textContent={"Loading..."}
+                textStyle={tw`text-white`}
+            />
+
             {/* Profile Picture */}
             <View style={tw`items-center`}>
                 <Text style={tw`font-bold`}>Upload a public profile picture</Text>
