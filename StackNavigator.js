@@ -5,6 +5,7 @@ import AuthScreen from "./screens/AuthScreen"
 import useAuth from "./hooks/useAuth"
 import EditProfileScreen from "./screens/EditProfileScreen"
 import AccountMenuScreen from "./screens/AccountMenuScreen"
+import ProductScreen from "./screens/ProductScreen"
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ const StackNavigator = () => {
             <Stack.Screen name="MainScreen" component={MainScreen} />
             <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
             <Stack.Screen name="AccountMenuScreen" component={AccountMenuScreen} />
+            <Stack.Screen name="ProductScreen" component={ProductScreen} />
             {!user && <Stack.Screen name="AuthScreen" component={AuthScreen} />}
         </Stack.Navigator>
     )

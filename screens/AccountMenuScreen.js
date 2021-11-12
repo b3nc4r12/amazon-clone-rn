@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Text, TouchableOpacity } from "react-native"
-import Header from "../components/editProfile/Header"
+import Header from "../components/HeaderWithBackButton"
 import tw from "tailwind-react-native-classnames"
 import { Icon } from "react-native-elements"
 import { useNavigation } from "@react-navigation/core"

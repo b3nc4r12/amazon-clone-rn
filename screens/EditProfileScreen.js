@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Text, ScrollView } from "react-native"
-import Header from "../components/editProfile/Header"
+import Header from "../components/HeaderWithBackButton"
 import tw from "tailwind-react-native-classnames"
 import { Divider } from "react-native-elements"
 import EditProfileForm from "../components/editProfile/EditProfileForm"

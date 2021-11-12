@@ -19,7 +19,7 @@ const ProductFeed = () => {
 
     return (
         <View>
-            {products?.map(({ id, title, price, category, image, rating }) => (
+            {products?.map(({ id, title, price, category, image, rating, description }) => (
                 <Product
                     key={id}
                     title={title}
@@ -27,6 +27,7 @@ const ProductFeed = () => {
                     category={category}
                     image={image}
                     rating={rating}
+                    description={description}
                 />
             ))}
         </View>

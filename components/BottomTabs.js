@@ -2,7 +2,7 @@ import React from "react"
 import { View, Pressable, Text } from "react-native"
 import { Icon } from "react-native-elements"
 import tw from "tailwind-react-native-classnames"
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { cartState } from "../atoms/cartAtom"
 
 const icons = [
@@ -47,7 +47,7 @@ const BottomTabs = ({ activeScreen, setActiveScreen }) => {
 }
 
 const BottomIcon = ({ name, type, color, borderStatus, onPress, index }) => {
-    const [cart] = useRecoilState(cartState);
+    const cart = useRecoilValue(cartState);
 
     return (
         <Pressable onPress={onPress} style={tw`relative pt-2.5 w-10`}>

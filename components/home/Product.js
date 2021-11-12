@@ -1,9 +1,11 @@
 import React, { useState } from "react"
-import { View, Text, Image } from "react-native"
+import { View, Text, Image, Pressable } from "react-native"
 import { Icon } from "react-native-elements"
 import tw from "tailwind-react-native-classnames"
+import { useNavigation } from "@react-navigation/core"
 
-const Product = ({ id, title, price, category, image, rating }) => {
+const Product = ({ id, title, price, category, image, rating, description }) => {
+    const navigation = useNavigation();
     const [hasPrime] = useState(Math.random() < 0.5);
 
     const truncate = (string, n) => {
@@ -11,14 +13,17 @@ const Product = ({ id, title, price, category, image, rating }) => {
     }
 
     return (
-        <View style={[tw`flex-row items-center w-full bg-white px-2.5 mb-1.5 shadow-md`, { height: 175 }]}>
+        <Pressable
+            onPress={() => navigation.navigate("ProductScreen", { id, title, price, category, image, rating, description })}
+            style={[tw`flex-row items-center w-full bg-white px-2.5 mb-1.5 shadow-md`, { height: 175 }]}
+        >
             <View>
                 <Image source={{ uri: image }} style={{ height: 100, width: 100, resizeMode: "contain" }} />
             </View>
             <View style={[tw` ml-5 py-5`, { width: "65%" }]}>
                 <Text style={tw`text-xs text-gray-500`}>{category}</Text>
                 <Text style={{ fontSize: 15, marginTop: 3 }}>{truncate(title, 75)}</Text>
-                <View style={tw`flex-row mt-1`}>
+                <View style={tw`flex-row items-center mt-1`}>
                     {Array(parseInt(rating.rate)).fill().map((_, i) => (
                         <Icon key={i} type="antdesign" name="star" size={16} color="rgba(245, 158, 11, 1)" />
                     ))}
@@ -37,7 +42,7 @@ const Product = ({ id, title, price, category, image, rating }) => {
                     </View>
                 )}
             </View>
-        </View>
+        </Pressable>
     )
 }
 
