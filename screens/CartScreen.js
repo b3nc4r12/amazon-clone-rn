@@ -14,78 +14,14 @@ import { useNavigation } from "@react-navigation/core"
 import { doc, serverTimestamp, setDoc } from "@firebase/firestore"
 import { db } from "../firebase"
 import Spinner from "react-native-loading-spinner-overlay"
+import currencyFormatter from "../utils/currencyFormatter"
 
 const CartScreen = ({ setActiveScreen }) => {
-    const navigation = useNavigation();
-    const { initPaymentSheet, presentPaymentSheet } = useStripe();
-    const [loading, setLoading] = useState(false);
-    const [paymentLoading, setPaymentLoading] = useState(false);
-    const [key, setKey] = useState(null);
-
     const { user } = useAuth();
     const cart = useRecoilValue(cartState);
-    const [hasPrime, setHasPrime] = useState(cart?.map((item) => item.hasPrime).includes(false) ? false : true);
-
-    useEffect(() => setHasPrime(cart.map((item) => item.hasPrime).includes(false) ? false : true), [cart])
-
-    const fetchPaymentSheetParams = async () => {
-        const response = await axios.post("https://stripe-payment-intent.vercel.app/create-payment-intent", {
-            amount: (cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) + (hasPrime ? 0 : 9.99)) * 100
-        })
-
-        const clientSecret = await response.data.clientSecret
-
-        setKey(clientSecret);
-
-        return clientSecret
-    }
-
-    useEffect(() => {
-        const initializePaymentSheet = async () => {
-            const clientSecret = await fetchPaymentSheetParams();
-
-            const { error } = await initPaymentSheet({ paymentIntentClientSecret: clientSecret });
-
-            if (!error) setLoading(true);
-        }
-
-        return initializePaymentSheet()
-    }, [])
-
-    const openPaymentSheet = async () => {
-        const { error } = await presentPaymentSheet();
-
-        if (error) {
-            Alert.alert(`Error code: ${error.code}`, error.message);
-        } else {
-            completePayment();
-        }
-    }
-
-    const completePayment = async () => {
-        setPaymentLoading(true);
-
-        await setDoc(doc(db, "users", user.email, "orders", key.split("_")[1]), {
-            amount: cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
-            amount_shipping: hasPrime ? 0 : 9.99,
-            images: cart.map((item) => item.image),
-            timestamp: serverTimestamp()
-        })
-            .then(() => navigation.navigate("OrdersScreen"))
-            .catch(() => Alert.alert("Error:", "An error occurred while completing your order."))
-            .finally(() => setPaymentLoading(false))
-    }
 
     return (
         <View style={tw`flex-1 bg-white`}>
-            <Spinner
-                visible={paymentLoading}
-                cancelable={false}
-                overlayColor="rgba(0, 0, 0, 0.5)"
-                textContent={"Completing your order..."}
-                textStyle={tw`text-white`}
-            />
-
             <CartHeader />
             <ScrollView style={tw`mb-20`}>
                 <LinearGradient colors={["#b1e6ed", "#c9f1e2"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={tw`h-11 flex-row items-center`}>
@@ -106,44 +42,131 @@ const CartScreen = ({ setActiveScreen }) => {
                             <Text style={tw`text-base`}>Continue shopping</Text>
                         </Pressable>
                     </>
-                ) : (
-                    <>
-                        <View style={tw`mx-3 mt-4 mb-3`}>
-                            <Text style={tw`text-xl`}>
-                                <Text>Subtotal: </Text>
-                                <Text style={tw`font-bold`}>
-                                    {new Intl.NumberFormat("en-ca", {
-                                        style: "currency",
-                                        currency: "CAD",
-                                    }).format(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0))}
-                                </Text>
-                            </Text>
-                            {!hasPrime && <Text style={tw`text-gray-600`}>Shipping: $9.99</Text>}
-                            {hasPrime && (
-                                <View style={tw`flex-row items-center mt-1`}>
-                                    <Image
-                                        source={{ uri: "https://i.ibb.co/s5L8S2b/green-checkmark.png" }}
-                                        style={tw`h-5 w-5 mr-1`}
-                                    />
-                                    <Text style={tw`text-green-700`}>Your order qualifies for FREE shipping</Text>
-                                </View>
-                            )}
-                            <Pressable
-                                disabled={!loading}
-                                onPress={openPaymentSheet}
-                                style={[tw`shadow-md py-3 items-center rounded-md mt-2`, { backgroundColor: "#fed814" }]}
-                            >
-                                <Text style={tw`text-base`}>Proceed to checkout ({cart.length} {cart.length === 1 ? "item" : "items"})</Text>
-                            </Pressable>
-                        </View>
-                        <Divider width={1} />
-                        {cart.map((item, index) => (
-                            <CartProduct key={index} index={index} {...item} />
-                        ))}
-                    </>
-                )}
+                ) : <Checkout user={user} cart={cart} />}
             </ScrollView>
         </View >
+    )
+}
+
+const Checkout = ({ user, cart }) => {
+    const navigation = useNavigation();
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [hasPrime, setHasPrime] = useState(cart?.map((item) => item.hasPrime).includes(false) ? false : true);
+    const [readyToPay, setReadyToPay] = useState(false);
+
+    useEffect(() => setHasPrime(cart.map((item) => item.hasPrime).includes(false) ? false : true), [cart])
+
+    const fetchPaymentSheetParams = async () => {
+        const response = await axios.post("https://stripe-payment-intent.vercel.app/create-payment-intent", {
+            amount: (cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) + (hasPrime ? 0 : 9.99)) * 100
+        })
+
+        const clientSecret = await response.data.clientSecret
+
+        return clientSecret
+    }
+
+    useEffect(() => {
+        if (readyToPay) {
+            const startPayment = async () => {
+                const initializePaymentSheet = async () => {
+                    const clientSecret = await fetchPaymentSheetParams();
+
+                    await initPaymentSheet({ paymentIntentClientSecret: clientSecret });
+
+                    return clientSecret
+                }
+
+                await initializePaymentSheet().then(async () => openPaymentSheet({ key: await initializePaymentSheet() }));
+            }
+
+            return startPayment();
+        } else return null
+    }, [readyToPay])
+
+    const openPaymentSheet = async ({ key }) => {
+        setReadyToPay(false);
+        const { error } = await presentPaymentSheet();
+
+        if (error) {
+            Alert.alert(`Error code: ${error.code}`, error.message);
+        } else {
+            completePayment(key);
+        }
+    }
+
+    const completePayment = async (key) => {
+        setPaymentLoading(true);
+
+        try {
+            await setDoc(doc(db, "users", user.email, "orders", key.split("_")[1]), {
+                amount: cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+                amount_shipping: hasPrime ? 0 : 9.99,
+                images: cart.map((item) => item.image),
+                timestamp: serverTimestamp()
+            })
+
+            navigation.navigate("OrdersScreen");
+        } catch (error) {
+            Alert.alert(error.message)
+        } finally {
+            setPaymentLoading(false);
+        }
+    }
+
+    return (
+        <>
+            <Spinner
+                visible={paymentLoading}
+                cancelable={false}
+                overlayColor="rgba(0, 0, 0, 0.5)"
+                textContent={"Completing your order..."}
+                textStyle={tw`text-white`}
+            />
+            <Spinner
+                visible={readyToPay}
+                cancelable={false}
+                overlayColor="rgba(0, 0, 0, 0.5)"
+                textContent={"Initializing..."}
+                textStyle={tw`text-white`}
+            />
+            <View style={tw`mx-3 mt-4 mb-3`}>
+                <Text style={tw`text-xl`}>
+                    <Text>Subtotal: </Text>
+                    <Text style={tw`font-bold`}>
+                        {currencyFormatter(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0))}
+                    </Text>
+                </Text>
+                {!hasPrime && <Text style={tw`text-gray-600`}>Shipping: $9.99</Text>}
+                {hasPrime && (
+                    <View style={tw`flex-row items-center mt-1`}>
+                        <Image
+                            source={{ uri: "https://i.ibb.co/s5L8S2b/green-checkmark.png" }}
+                            style={tw`h-5 w-5 mr-1`}
+                        />
+                        <Text style={tw`text-green-700`}>Your order qualifies for FREE shipping</Text>
+                    </View>
+                )}
+                <Divider width={1} style={tw`pt-1`} />
+                <Text style={tw`text-xl`}>
+                    <Text>Total: </Text>
+                    <Text style={tw`font-bold`}>
+                        {currencyFormatter(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) + (hasPrime ? 0 : 9.99))}
+                    </Text>
+                </Text>
+                <Pressable
+                    onPress={() => setReadyToPay(true)}
+                    style={[tw`shadow-md py-3 items-center rounded-md mt-2`, { backgroundColor: "#fed814" }]}
+                >
+                    <Text style={tw`text-base`}>Proceed to checkout ({cart.length} {cart.length === 1 ? "item" : "items"})</Text>
+                </Pressable>
+            </View>
+            <Divider width={1} />
+            {cart.map((item, index) => (
+                <CartProduct key={index} index={index} {...item} />
+            ))}
+        </>
     )
 }
 
