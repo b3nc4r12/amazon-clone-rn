@@ -100,7 +100,7 @@ const Checkout = ({ user, cart }) => {
         setPaymentLoading(true);
 
         try {
-            await setDoc(doc(db, "users", user.email, "orders", key.split("_")[1]), {
+            await setDoc(doc(db, "users", user.email, "orders", (key.split("_")[0] + "_" + key.split("_")[1])), {
                 amount: cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
                 amount_shipping: hasPrime ? 0 : 9.99,
                 images: cart.map((item) => item.image),
