@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import BottomTabs from "../components/BottomTabs"
 import HomeScreen from "./HomeScreen"
 import AccountScreen from "./AccountScreen"
+import CartScreen from "./CartScreen"
 
 const MainScreen = () => {
     const [activeScreen, setActiveScreen] = useState("Home");
@@ -11,7 +12,7 @@ const MainScreen = () => {
             {
                 activeScreen == "Home" ? <HomeScreen /> :
                     activeScreen == "Account" ? <AccountScreen setActiveScreen={setActiveScreen} /> :
-                        activeScreen == "Cart" ? <HomeScreen /> :
+                        activeScreen == "Cart" ? <CartScreen setActiveScreen={setActiveScreen} /> :
                             activeScreen == "Menu" && <HomeScreen />
             }
             <BottomTabs activeScreen={activeScreen} setActiveScreen={setActiveScreen} />

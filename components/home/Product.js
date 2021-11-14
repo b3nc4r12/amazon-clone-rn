@@ -3,18 +3,15 @@ import { View, Text, Image, Pressable } from "react-native"
 import { Icon } from "react-native-elements"
 import tw from "tailwind-react-native-classnames"
 import { useNavigation } from "@react-navigation/core"
+import truncate from "../../utils/truncate"
 
-const Product = ({ id, title, price, category, image, rating, description }) => {
+const Product = ({ id, title, price, category, image, rating }) => {
     const navigation = useNavigation();
     const [hasPrime] = useState(Math.random() < 0.5);
 
-    const truncate = (string, n) => {
-        return string?.length > n ? string.substr(0, n - 1) + "..." : string
-    }
-
     return (
         <Pressable
-            onPress={() => navigation.navigate("ProductScreen", { id, title, price, category, image, rating, description })}
+            onPress={() => navigation.navigate("ProductScreen", { id, title, price, category, image, rating, hasPrime })}
             style={[tw`flex-row items-center w-full bg-white px-2.5 mb-1.5 shadow-md`, { height: 175 }]}
         >
             <View>

@@ -14,11 +14,12 @@ import { useNavigation } from "@react-navigation/core"
 const ProductScreen = ({ route }) => {
     const navigation = useNavigation();
     const { user } = useAuth();
-    const { id, title, price, category, image, rating, description } = route.params
+    const { id, title, price, category, image, rating, hasPrime } = route.params
 
     const [quantity, setQuantity] = useState(1);
     const [cart, setCart] = useRecoilState(cartState);
 
+    // Quantity Select Dropdown Options
     const options = []
     let counter = 1
 
@@ -26,6 +27,7 @@ const ProductScreen = ({ route }) => {
         options.push(counter)
         counter++
     }
+    // End Quantity Select Dropdown Options
 
     const addToCart = () => {
         const product = {
@@ -33,10 +35,29 @@ const ProductScreen = ({ route }) => {
             title,
             price,
             quantity,
-            image
+            image,
+            hasPrime
         }
 
-        setCart([...cart, product])
+        const checkIfItemIsInCart = cart.findIndex((item) => item.id === product.id);
+
+        if (checkIfItemIsInCart === -1) {
+            setCart([...cart, product])
+        } else {
+            const newCart = cart.map((item) => {
+                if (item.id === product.id) {
+                    const newItem = {
+                        ...item,
+                        quantity: item.quantity + product.quantity
+                    }
+
+                    return newItem
+                }
+                return item
+            })
+            setCart(newCart)
+        }
+
         navigation.navigate("MainScreen")
     }
 

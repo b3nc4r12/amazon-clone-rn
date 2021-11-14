@@ -30,7 +30,7 @@ const SignInForm = () => {
                 visible={loading}
                 cancelable={false}
                 overlayColor="rgba(0, 0, 0, 0.5)"
-                textContent={"Loading..."}
+                textContent={"Authenticating..."}
                 textStyle={tw`text-white`}
             />
 
