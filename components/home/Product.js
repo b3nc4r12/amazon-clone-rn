@@ -4,6 +4,7 @@ import { Icon } from "react-native-elements"
 import tw from "tailwind-react-native-classnames"
 import { useNavigation } from "@react-navigation/core"
 import truncate from "../../utils/truncate"
+import currencyFormatter from "../../utils/currencyFormatter"
 
 const Product = ({ id, title, price, category, image, rating }) => {
     const navigation = useNavigation();
@@ -27,10 +28,7 @@ const Product = ({ id, title, price, category, image, rating }) => {
                     <Text style={tw`ml-1 text-gray-700 font-light text-xs`}>{rating.count}</Text>
                 </View>
                 <Text style={tw`text-lg`}>
-                    {new Intl.NumberFormat("en-ca", {
-                        style: "currency",
-                        currency: "CAD",
-                    }).format(price)}
+                    {currencyFormatter(price)}
                 </Text>
                 {hasPrime && (
                     <View style={tw`flex-row items-center`}>

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { View, Text, Image, Pressable } from "react-native"
 import { Icon } from "react-native-elements"
 import { useRecoilState } from "recoil"
 import tw from "tailwind-react-native-classnames"
 import { cartState } from "../../atoms/cartAtom"
 import truncate from "../../utils/truncate"
+import currencyFormatter from "../../utils/currencyFormatter"
 
 const CartProduct = ({ id, index, title, price, image, hasPrime }) => {
     const [cart, setCart] = useRecoilState(cartState);
@@ -73,10 +74,7 @@ const CartProduct = ({ id, index, title, price, image, hasPrime }) => {
                 <View style={[tw`ml-5 py-5`, { width: "65%" }]}>
                     <Text style={{ fontSize: 15, marginTop: 3 }}>{truncate(title, 60)}</Text>
                     <Text style={tw`text-lg font-bold`}>
-                        {new Intl.NumberFormat("en-ca", {
-                            style: "currency",
-                            currency: "CAD",
-                        }).format(price * productQuantity)}
+                        {currencyFormatter(price * productQuantity)}
                     </Text>
                     <Text style={tw`text-xs text-green-700`}>In Stock</Text>
                 </View>
@@ -104,6 +102,9 @@ const CartProduct = ({ id, index, title, price, image, hasPrime }) => {
                         <Icon type="antdesign" name="plus" size={20} color="black" />
                     </Pressable>
                 </View>
+                <Pressable onPress={() => removeFromCart(id)} style={tw`py-1.5 ml-2 px-3 bg-white shadow-md border border-gray-400 rounded-md`}>
+                    <Text>Delete</Text>
+                </Pressable>
             </View>
         </View>
     )
