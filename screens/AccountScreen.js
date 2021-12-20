@@ -9,8 +9,7 @@ import useAuth from "../hooks/useAuth"
 import validUrl from "valid-url"
 import { collection, onSnapshot, orderBy, query } from "@firebase/firestore"
 import { db } from "../firebase"
-import { format } from "date-fns"
-import currencyFormatter from "../lib/currencyFormatter"
+import Order from "../components/order/Order"
 
 const data = [
     "Your Orders",
@@ -40,7 +39,7 @@ const AccountScreen = ({ setActiveScreen }) => {
                     )
                 }
             ),
-        [db]
+        [db, user]
     )
 
     return (
@@ -102,31 +101,16 @@ const AccountScreen = ({ setActiveScreen }) => {
 
                     <View>
                         <Text style={tw`text-lg text-gray-800 my-2 pl-5 font-bold`}>Your Orders</Text>
-                        <ScrollView style={{ paddingHorizontal: 20, marginBottom: 400 }}>
-                            {orders.map((order) => (
-                                <View key={order.id} style={tw`my-5 shadow-lg`}>
-                                    <View style={tw`bg-gray-300 rounded-t-2xl p-2`}>
-                                        <Text style={tw`text-xs font-medium`}>{format(order.timestamp.toDate(), "MMMM dd, yyyy")}</Text>
-                                        <Text style={tw`text-xs font-medium`}>ORDER ID: {order.id}</Text>
-                                        <Text>Amount (without shipping): {currencyFormatter(order.amount)}</Text>
-                                        <Text>Shipping: {currencyFormatter(order.amount_shipping)}</Text>
-                                    </View>
-                                    <View style={tw`p-2.5 bg-white rounded-b-2xl`}>
-                                        <FlatList
-                                            data={order.images}
-                                            keyExtractor={(image, i) => i.toString()}
-                                            horizontal
-                                            ItemSeparatorComponent={() => <View style={tw`m-2`} />}
-                                            renderItem={({ item }) => (
-                                                <Image
-                                                    source={{ uri: item }}
-                                                    style={[tw`h-32 w-32`, { resizeMode: "contain" }]}
-                                                />
-                                            )}
-                                        />
-                                    </View>
-                                </View>
-                            ))}
+                        <ScrollView style={[tw`px-5`, orders.length > 0 && { marginBottom: 400 }]}>
+                            {orders.length > 0 ? (
+                                <>
+                                    {orders.map((order) => (
+                                        <Order key={order.id} order={order} />
+                                    ))}
+                                </>
+                            ) : (
+                                <Text>Hi, you have no recent orders.</Text>
+                            )}
                         </ScrollView>
                     </View>
 

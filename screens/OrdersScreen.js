@@ -8,9 +8,7 @@ import useAuth from "../hooks/useAuth"
 import Header from "../components/HeaderWithBackButton"
 import tw from "tailwind-react-native-classnames"
 import { ScrollView } from "react-native"
-import currencyFormatter from "../lib/currencyFormatter"
-import { FlatList } from "react-native"
-import { format } from "date-fns"
+import Order from "../components/order/Order"
 
 const OrdersScreen = () => {
     const emptyCart = useResetRecoilState(cartState);
@@ -40,31 +38,10 @@ const OrdersScreen = () => {
     return (
         <View style={tw`bg-white flex-1`}>
             <Header />
-            <ScrollView>
-                <Text style={tw`pt-5 pl-5 text-lg font-medium`}>Your Orders</Text>
+            <ScrollView style={tw`px-5`}>
+                <Text style={tw`pt-5 text-lg font-medium`}>Your Orders</Text>
                 {orders.map((order) => (
-                    <View key={order.id} style={tw`m-5 shadow-lg`}>
-                        <View style={tw`bg-gray-300 rounded-t-2xl p-2`}>
-                            <Text style={tw`text-xs font-medium`}>{format(order.timestamp.toDate(), "MMMM dd, yyyy")}</Text>
-                            <Text style={tw`text-xs font-medium`}>ORDER ID: {order.id}</Text>
-                            <Text>Amount (without shipping): {currencyFormatter(order.amount)}</Text>
-                            <Text>Shipping: {currencyFormatter(order.amount_shipping)}</Text>
-                        </View>
-                        <View style={tw`p-2.5 bg-white rounded-b-2xl`}>
-                            <FlatList
-                                data={order.images}
-                                keyExtractor={(image, i) => i.toString()}
-                                horizontal
-                                ItemSeparatorComponent={() => <View style={tw`m-2`} />}
-                                renderItem={({ item }) => (
-                                    <Image
-                                        source={{ uri: item }}
-                                        style={[tw`h-32 w-32`, { resizeMode: "contain" }]}
-                                    />
-                                )}
-                            />
-                        </View>
-                    </View>
+                    <Order key={order.id} order={order} />
                 ))}
             </ScrollView>
         </View>
