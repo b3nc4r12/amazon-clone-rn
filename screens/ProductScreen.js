@@ -10,7 +10,7 @@ import SelectDropdown from "react-native-select-dropdown"
 import { useRecoilState } from "recoil"
 import { cartState } from "../atoms/cartAtom"
 import { useNavigation } from "@react-navigation/core"
-import currencyFormatter from "../utils/currencyFormatter"
+import currencyFormatter from "../lib/currencyFormatter"
 
 const ProductScreen = ({ route }) => {
     const navigation = useNavigation();

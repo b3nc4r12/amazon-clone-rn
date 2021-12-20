@@ -3,8 +3,8 @@ import { View, Text, Image, Pressable } from "react-native"
 import { Icon } from "react-native-elements"
 import tw from "tailwind-react-native-classnames"
 import { useNavigation } from "@react-navigation/core"
-import truncate from "../../utils/truncate"
-import currencyFormatter from "../../utils/currencyFormatter"
+import truncate from "../../lib/truncate"
+import currencyFormatter from "../../lib/currencyFormatter"
 
 const Product = ({ id, title, price, category, image, rating }) => {
     const navigation = useNavigation();

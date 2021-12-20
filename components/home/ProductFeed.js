@@ -1,16 +1,14 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { View } from "react-native"
-import { useRecoilState } from "recoil"
-import { productsState } from "../../atoms/productsAtom"
-import axios from "../../axios"
+import axios from "axios"
 import Product from "./Product"
 
 const ProductFeed = () => {
-    const [products, setProducts] = useRecoilState(productsState);
+    const [products, setProducts] = useState([]);
 
     useEffect(() => {
         const fetchProducts = async () => {
-            const request = await axios.get("/products")
+            const request = await axios.get("https://fakestoreapi.com/products")
             setProducts(request.data)
 
             return request

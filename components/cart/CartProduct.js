@@ -4,8 +4,8 @@ import { Icon } from "react-native-elements"
 import { useRecoilState } from "recoil"
 import tw from "tailwind-react-native-classnames"
 import { cartState } from "../../atoms/cartAtom"
-import truncate from "../../utils/truncate"
-import currencyFormatter from "../../utils/currencyFormatter"
+import truncate from "../../lib/truncate"
+import currencyFormatter from "../../lib/currencyFormatter"
 
 const CartProduct = ({ id, index, title, price, image, hasPrime }) => {
     const [cart, setCart] = useRecoilState(cartState);

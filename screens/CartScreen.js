@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/core"
 import { doc, serverTimestamp, setDoc } from "@firebase/firestore"
 import { db } from "../firebase"
 import Spinner from "react-native-loading-spinner-overlay"
-import currencyFormatter from "../utils/currencyFormatter"
+import currencyFormatter from "../lib/currencyFormatter"
 
 const CartScreen = ({ setActiveScreen }) => {
     const { user } = useAuth();
@@ -53,13 +53,15 @@ const Checkout = ({ user, cart }) => {
     const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [hasPrime, setHasPrime] = useState(cart?.map((item) => item.hasPrime).includes(false) ? false : true);
-    const [readyToPay, setReadyToPay] = useState(false);
+    const [subtotal, setSubtotal] = useState(cart.reduce((acc, item) => acc + item.price * item.quantity, 0));
+    const [sheetLoading, setSheetLoading] = useState(false);
 
     useEffect(() => setHasPrime(cart.map((item) => item.hasPrime).includes(false) ? false : true), [cart])
+    useEffect(() => setSubtotal(cart.reduce((acc, item) => acc + item.price * item.quantity, 0)), [cart])
 
     const fetchPaymentSheetParams = async () => {
         const response = await axios.post("https://stripe-payment-intent.vercel.app/create-payment-intent", {
-            amount: (cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) + (hasPrime ? 0 : 9.99)) * 100
+            amount: (subtotal + (hasPrime ? 0 : 9.99)) * 100
         })
 
         const clientSecret = await response.data.clientSecret
@@ -67,26 +69,20 @@ const Checkout = ({ user, cart }) => {
         return clientSecret
     }
 
-    useEffect(() => {
-        if (readyToPay) {
-            const startPayment = async () => {
-                const initializePaymentSheet = async () => {
-                    const clientSecret = await fetchPaymentSheetParams();
+    const initializePaymentSheet = async () => {
+        setSheetLoading(true);
 
-                    await initPaymentSheet({ paymentIntentClientSecret: clientSecret });
+        const clientSecret = await fetchPaymentSheetParams();
 
-                    return clientSecret
-                }
+        await initPaymentSheet({
+            paymentIntentClientSecret: clientSecret
+        })
+            .then(() => openPaymentSheet(clientSecret))
+    }
 
-                await initializePaymentSheet().then(async () => openPaymentSheet({ key: await initializePaymentSheet() }));
-            }
+    const openPaymentSheet = async (key) => {
+        setSheetLoading(false);
 
-            return startPayment();
-        } else return null
-    }, [readyToPay])
-
-    const openPaymentSheet = async ({ key }) => {
-        setReadyToPay(false);
         const { error } = await presentPaymentSheet();
 
         if (error) {
@@ -101,7 +97,7 @@ const Checkout = ({ user, cart }) => {
 
         try {
             await setDoc(doc(db, "users", user.email, "orders", (key.split("_")[0] + "_" + key.split("_")[1])), {
-                amount: cart.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+                amount: subtotal,
                 amount_shipping: hasPrime ? 0 : 9.99,
                 images: cart.map((item) => item.image),
                 timestamp: serverTimestamp()
@@ -125,7 +121,7 @@ const Checkout = ({ user, cart }) => {
                 textStyle={tw`text-white`}
             />
             <Spinner
-                visible={readyToPay}
+                visible={sheetLoading}
                 cancelable={false}
                 overlayColor="rgba(0, 0, 0, 0.5)"
                 textContent={"Initializing..."}
@@ -135,7 +131,7 @@ const Checkout = ({ user, cart }) => {
                 <Text style={tw`text-xl`}>
                     <Text>Subtotal: </Text>
                     <Text style={tw`font-bold`}>
-                        {currencyFormatter(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0))}
+                        {currencyFormatter(subtotal)}
                     </Text>
                 </Text>
                 {!hasPrime && <Text style={tw`text-gray-600`}>Shipping: $9.99</Text>}
@@ -152,11 +148,11 @@ const Checkout = ({ user, cart }) => {
                 <Text style={tw`text-xl`}>
                     <Text>Total: </Text>
                     <Text style={tw`font-bold`}>
-                        {currencyFormatter(cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) + (hasPrime ? 0 : 9.99))}
+                        {currencyFormatter(subtotal + (hasPrime ? 0 : 9.99))}
                     </Text>
                 </Text>
                 <Pressable
-                    onPress={() => setReadyToPay(true)}
+                    onPress={initializePaymentSheet}
                     style={[tw`shadow-md py-3 items-center rounded-md mt-2`, { backgroundColor: "#fed814" }]}
                 >
                     <Text style={tw`text-base`}>Proceed to checkout ({cart.length} {cart.length === 1 ? "item" : "items"})</Text>

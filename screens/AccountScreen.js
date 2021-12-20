@@ -1,5 +1,5 @@
-import React from "react"
-import { View, Text, Pressable, Image, TouchableOpacity } from "react-native"
+import React, { useEffect, useState } from "react"
+import { View, Text, Pressable, Image, TouchableOpacity, FlatList, ScrollView } from "react-native"
 import Header from "../components/account/Header"
 import tw from "tailwind-react-native-classnames"
 import { LinearGradient } from "expo-linear-gradient"
@@ -7,6 +7,10 @@ import FeaturesList from "../components/account/FeaturesList"
 import { useNavigation } from "@react-navigation/core"
 import useAuth from "../hooks/useAuth"
 import validUrl from "valid-url"
+import { collection, onSnapshot, orderBy, query } from "@firebase/firestore"
+import { db } from "../firebase"
+import { format } from "date-fns"
+import currencyFormatter from "../lib/currencyFormatter"
 
 const data = [
     "Your Orders",
@@ -18,6 +22,26 @@ const data = [
 const AccountScreen = ({ setActiveScreen }) => {
     const navigation = useNavigation();
     const { user } = useAuth();
+    const [orders, setOrders] = useState([]);
+
+    useEffect(
+        () =>
+            onSnapshot(
+                query(
+                    collection(db, "users", user.email, "orders"),
+                    orderBy("timestamp", "desc")
+                ),
+                (snapshot) => {
+                    setOrders(
+                        snapshot.docs.map((doc) => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }))
+                    )
+                }
+            ),
+        [db]
+    )
 
     return (
         <View style={tw`flex-1 bg-white`}>
@@ -67,7 +91,7 @@ const AccountScreen = ({ setActiveScreen }) => {
                     <View style={tw`flex-row justify-around flex-wrap px-2 -mt-8`}>
                         {data.map((text, index) => (
                             <TouchableOpacity
-                                onPress={() => index === 2 ? navigation.navigate("AccountMenuScreen") : navigation.navigate("MainScreen")}
+                                onPress={() => index === 2 ? navigation.navigate("AccountMenuScreen") : index === 0 ? navigation.navigate("OrdersScreen") : navigation.navigate("MainScreen")}
                                 key={index}
                                 style={[tw`items-center bg-gray-50 py-4 shadow-sm rounded-full border border-gray-300 mb-2.5`, { width: "45%" }]}
                             >
@@ -76,9 +100,34 @@ const AccountScreen = ({ setActiveScreen }) => {
                         ))}
                     </View>
 
-                    <View style={tw`pl-5`}>
-                        <Text style={tw`text-lg text-gray-800 my-2 font-bold`}>Your Orders</Text>
-                        <Text>Hi, you have no recent orders.</Text>
+                    <View>
+                        <Text style={tw`text-lg text-gray-800 my-2 pl-5 font-bold`}>Your Orders</Text>
+                        <ScrollView style={{ paddingHorizontal: 20, marginBottom: 400 }}>
+                            {orders.map((order) => (
+                                <View key={order.id} style={tw`my-5 shadow-lg`}>
+                                    <View style={tw`bg-gray-300 rounded-t-2xl p-2`}>
+                                        <Text style={tw`text-xs font-medium`}>{format(order.timestamp.toDate(), "MMMM dd, yyyy")}</Text>
+                                        <Text style={tw`text-xs font-medium`}>ORDER ID: {order.id}</Text>
+                                        <Text>Amount (without shipping): {currencyFormatter(order.amount)}</Text>
+                                        <Text>Shipping: {currencyFormatter(order.amount_shipping)}</Text>
+                                    </View>
+                                    <View style={tw`p-2.5 bg-white rounded-b-2xl`}>
+                                        <FlatList
+                                            data={order.images}
+                                            keyExtractor={(image, i) => i.toString()}
+                                            horizontal
+                                            ItemSeparatorComponent={() => <View style={tw`m-2`} />}
+                                            renderItem={({ item }) => (
+                                                <Image
+                                                    source={{ uri: item }}
+                                                    style={[tw`h-32 w-32`, { resizeMode: "contain" }]}
+                                                />
+                                            )}
+                                        />
+                                    </View>
+                                </View>
+                            ))}
+                        </ScrollView>
                     </View>
 
                     <TouchableOpacity
