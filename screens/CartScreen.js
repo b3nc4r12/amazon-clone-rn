@@ -74,13 +74,11 @@ const Checkout = ({ user, cart }) => {
 
         const clientSecret = await fetchPaymentSheetParams();
 
-        await initPaymentSheet({
-            paymentIntentClientSecret: clientSecret
-        })
+        await initPaymentSheet({ paymentIntentClientSecret: clientSecret })
             .then(() => openPaymentSheet(clientSecret))
     }
 
-    const openPaymentSheet = async (key) => {
+    const openPaymentSheet = async (clientSecret) => {
         setSheetLoading(false);
 
         const { error } = await presentPaymentSheet();
@@ -88,7 +86,7 @@ const Checkout = ({ user, cart }) => {
         if (error) {
             Alert.alert(`Error code: ${error.code}`, error.message);
         } else {
-            completePayment(key);
+            completePayment(clientSecret);
         }
     }
 

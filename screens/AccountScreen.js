@@ -25,7 +25,7 @@ const AccountScreen = ({ setActiveScreen }) => {
 
     useEffect(
         () =>
-            onSnapshot(
+            user && onSnapshot(
                 query(
                     collection(db, "users", user.email, "orders"),
                     orderBy("timestamp", "desc")
